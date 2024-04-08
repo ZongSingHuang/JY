@@ -46,7 +46,6 @@ def script_gift_code():
             # 自動關閉【卡已用過】的彈跳視窗
             try:
                 # 用 pyautogui.click() 會發生第一次執行時不會成功讓滑鼠左鍵點擊，所以改用 moveTo + mouseDown + mouseUp
-                fail_ct += 1
                 is_register = pyautogui.locateOnScreen(
                     "sample01.png"
                 )  # 比對當前視窗截圖與 sample 是否有一樣的
@@ -58,6 +57,7 @@ def script_gift_code():
                 time.sleep(1)
                 pyautogui.mouseDown()  # 點擊滑鼠左鍵
                 pyautogui.mouseUp()
+                fail_ct += 1
                 print(f"第 {idx + 1} 個直播碼，重複輸入!")
             except Exception:
                 sucess_ct += 1
@@ -66,13 +66,16 @@ def script_gift_code():
         print(
             f"總共有 {len(gift_codes)} 個直播碼，成功 {sucess_ct} 次；失敗 {fail_ct} 次"
         )
+        manual_post_path = os.path.join(os.getcwd(), "鏢局.png")
+        subprocess.Popen(["start", "", manual_post_path], shell=True)
 
     while True:
         print("是否已經把【指令】-【雜項】-【儲值點數】拖移到快捷列的第 1 個位置(F1)?")
         print("1. 確定!")
         print("2. 怎麼拖移?")
         print("3. 怎麼確定有拖移到正確位置?")
-        print("4. 回到主選單")
+        print("4. 怎麼東西不在背包裡?")
+        print("5. 回到主選單")
         choice = msvcrt.getch()
         match choice:
             case b"1":
@@ -84,6 +87,9 @@ def script_gift_code():
                 manual_gift_code_path = os.path.join(os.getcwd(), "儲存點數.png")
                 subprocess.Popen(["start", "", manual_gift_code_path], shell=True)
             case b"4":
+                manual_post_path = os.path.join(os.getcwd(), "鏢局.png")
+                subprocess.Popen(["start", "", manual_post_path], shell=True)
+            case b"5":
                 break
             case _:
                 print("指令錯誤!。")
@@ -145,6 +151,10 @@ def main():
     manual_admin_path = os.path.join(os.getcwd(), "系統管理員.png")
     if not os.path.isfile(manual_admin_path):
         print(f"找不到 {manual_admin_path} !")
+        everything_can_found = False
+    manual_post_path = os.path.join(os.getcwd(), "鏢局.png")
+    if not os.path.isfile(manual_post_path):
+        print(f"找不到 {manual_post_path} !")
         everything_can_found = False
 
     if not everything_can_found:
