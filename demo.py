@@ -80,7 +80,7 @@ def script_gift_code():
                     time.sleep(1)
                 auto_enter_gift_code()
             case b"2":
-                pass
+                print()
             case b"3":
                 pass
             case b"4":
@@ -125,23 +125,45 @@ def script_training_mana():
 
 
 def main():
-    while True:
-        print("請按下要執行的功能：")
-        print("1. 直播碼")
-        print("2. 修練內力")
-        print("Esc. 退出程式")
+    # 檢查必要檔案是否存在
+    everything_can_found = True
+    gift_codes_path = os.path.join(os.getcwd(), "直播碼.txt")
+    if not os.path.isfile(gift_codes_path):
+        print(f"找不到 {gift_codes_path} !")
+        everything_can_found = False
+    sample_path = os.path.join(os.getcwd(), "sample01.png")
+    if not os.path.isfile(sample_path):
+        print(f"找不到 {sample_path} !")
+        everything_can_found = False
+    manual_mana_path = os.path.join(os.getcwd(), "修練內力.png")
+    if not os.path.isfile(manual_mana_path):
+        print(f"找不到 {manual_mana_path} !")
+        everything_can_found = False
+    manual_gift_code_path = os.path.join(os.getcwd(), "儲存點數.png")
+    if not os.path.isfile(manual_gift_code_path):
+        print(f"找不到 {manual_gift_code_path} !")
+        everything_can_found = False
 
-        choice = msvcrt.getch()
-        match choice:
-            case b"1":
-                script_gift_code()
-            case b"2":
-                script_training_mana()
-            case b"\x1b":
-                print("結束程式!。")
-                break
-            case _:
-                print("指令錯誤!。")
+    if not everything_can_found:
+        os.system("pause")
+    else:
+        while True:
+            print("請按下要執行的功能：")
+            print("1. 直播碼")
+            print("2. 修練內力")
+            print("Esc. 退出程式")
+
+            choice = msvcrt.getch()
+            match choice:
+                case b"1":
+                    script_gift_code()
+                case b"2":
+                    script_training_mana()
+                case b"\x1b":
+                    print("結束程式!。")
+                    break
+                case _:
+                    print("指令錯誤!。")
 
 
 if __name__ == "__main__":
