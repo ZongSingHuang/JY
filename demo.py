@@ -1,5 +1,6 @@
 import msvcrt
 import os
+import subprocess
 import time
 
 import pyautogui
@@ -67,7 +68,7 @@ def script_gift_code():
         )
 
     while True:
-        print("是否已經把【指令】-【雜項】-【儲值點數】拖移到快捷列的第 1 個位置?")
+        print("是否已經把【指令】-【雜項】-【儲值點數】拖移到快捷列的第 1 個位置(F1)?")
         print("1. 確定!")
         print("2. 怎麼拖移?")
         print("3. 怎麼確定有拖移到正確位置?")
@@ -79,10 +80,9 @@ def script_gift_code():
                     print(f"{i} 秒後執行，請趕緊用滑鼠左鍵點點擊 1 下遊戲畫面!")
                     time.sleep(1)
                 auto_enter_gift_code()
-            case b"2":
-                print()
-            case b"3":
-                pass
+            case b"2" | b"3":
+                manual_gift_code_path = os.path.join(os.getcwd(), "儲存點數.png")
+                subprocess.Popen(["start", "", manual_gift_code_path], shell=True)
             case b"4":
                 break
             case _:
@@ -102,7 +102,7 @@ def script_training_mana():
             time.sleep(1)
 
     while True:
-        print("是否已經把【指令】-【武學】-【修練內力】拖移到快捷列的第 4 個位置?")
+        print("是否已經把【指令】-【武學】-【修練內力】拖移到快捷列的第 4 個位置(F4)?")
         print("1. 確定!")
         print("2. 怎麼拖移?")
         print("3. 怎麼確定有拖移到正確位置?")
@@ -114,10 +114,9 @@ def script_training_mana():
                     print(f"{i} 秒後執行，請趕緊用滑鼠左鍵點點擊 1 下遊戲畫面!")
                     time.sleep(1)
                 auto_training_mana()
-            case b"2":
-                pass
-            case b"3":
-                pass
+            case b"2" | b"3":
+                manual_mana_path = os.path.join(os.getcwd(), "修練內力.png")
+                subprocess.Popen(["start", "", manual_mana_path], shell=True)
             case b"4":
                 break
             case _:
