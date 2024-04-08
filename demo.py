@@ -2,7 +2,6 @@ import msvcrt
 import os
 import time
 
-import keyboard
 import pyautogui
 
 
@@ -10,10 +9,6 @@ def script_gift_code():
     def auto_enter_gift_code():
         # 提示
         print("執行直播碼自動輸入環節...")
-
-        # 爬蟲
-
-        # 存成直播碼.txt
 
         # 讀取筆記本內的直播碼
         gift_codes_path = os.path.join(os.getcwd(), "直播碼.txt")
@@ -30,10 +25,7 @@ def script_gift_code():
         fail_ct = 0
         for idx, (sn, pwd) in enumerate(gift_codes):
             # 強制中止
-            print("正在輸入直播碼，狂按 Esc 可以中止...")
-            time.sleep(1)
-            if keyboard.is_pressed("esc"):
-                break
+            print("正在輸入直播碼，直接關閉程式可以中止...")
             # 按下遊戲中，快捷列的 f1(儲值點數)
             pyautogui.keyDown("f1")
             pyautogui.keyUp("f1")
@@ -106,10 +98,8 @@ def script_training_mana():
             pyautogui.keyDown("f4")
             pyautogui.keyUp("f4")
             # 強制中止
-            print("正在修練內力，狂按 Esc 可以中止...")
+            print("正在修練內力，，直接關閉程式可以中止...")
             time.sleep(1)
-            if keyboard.is_pressed("esc"):
-                break
 
     while True:
         print("是否已經把【指令】-【武學】-【修練內力】拖移到快捷列的第 4 個位置?")
