@@ -17,6 +17,9 @@ def script_gift_code():
 
         # 讀取筆記本內的直播碼
         gift_codes_path = os.path.join(os.getcwd(), "直播碼.txt")
+        if not os.path.isfile(gift_codes_path):
+            print(f"找不到 {gift_codes_path} !")
+            return None
         with open(gift_codes_path, "r") as file:
             content = file.read()
         gift_codes = [(v.split()[0], v.split()[1]) for v in content.split("\n")]
