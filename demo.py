@@ -142,27 +142,47 @@ def main():
     if not os.path.isfile(manual_gift_code_path):
         print(f"找不到 {manual_gift_code_path} !")
         everything_can_found = False
+    manual_admin_path = os.path.join(os.getcwd(), "系統管理員.png")
+    if not os.path.isfile(manual_admin_path):
+        print(f"找不到 {manual_admin_path} !")
+        everything_can_found = False
 
     if not everything_can_found:
         os.system("pause")
     else:
-        while True:
-            print("請按下要執行的功能：")
-            print("1. 直播碼")
-            print("2. 修練內力")
-            print("Esc. 退出程式")
+        print("是否已經以系統管理員身份開啟本程式?")
+        print("1. 確定!")
+        print("2. 什麼是系統管理員?")
+        print("3. 如何用系統管理員身份打開程式?")
+        print("Esc. 退出程式")
+        choice = msvcrt.getch()
+        match choice:
+            case b"1":
+                while True:
+                    print("請按下要執行的功能：")
+                    print("1. 直播碼")
+                    print("2. 修練內力")
+                    print("Esc. 退出程式")
 
-            choice = msvcrt.getch()
-            match choice:
-                case b"1":
-                    script_gift_code()
-                case b"2":
-                    script_training_mana()
-                case b"\x1b":
-                    print("結束程式!。")
-                    break
-                case _:
-                    print("指令錯誤!。")
+                    choice = msvcrt.getch()
+                    match choice:
+                        case b"1":
+                            script_gift_code()
+                        case b"2":
+                            script_training_mana()
+                        case b"\x1b":
+                            print("結束程式!。")
+                            break
+                        case _:
+                            print("指令錯誤!。")
+            case b"2" | b"3":
+                manual_admin_path = os.path.join(os.getcwd(), "系統管理員.png")
+                subprocess.Popen(["start", "", manual_admin_path], shell=True)
+            case b"4":
+                os.system("pause")
+            case _:
+                print("指令錯誤!。")
+        os.system("pause")
 
 
 if __name__ == "__main__":
