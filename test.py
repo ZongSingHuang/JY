@@ -1,68 +1,33 @@
-import os
-import time
+import cv2
+import pytesseract
+from PIL import Image
 
-import pyautogui
+img = cv2.imread("iqtest_q_010_2560x1600.png", cv2.IMREAD_UNCHANGED)  # 開啟圖片
+img = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)  # 因為是 jpg，要轉換顏色為 BGRA
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # 新增 gray 變數為轉換成灰階的圖片
 
-# 初始化
-title = "2560x1600_iqtest"  # 標題
-orign_path = os.path.join(os.getcwd(), "2560x1600", "iqtest")  # 路徑
+h = img.shape[0]  # 取得圖片高度
+w = img.shape[1]  # 取得圖片寬度
 
-# 計數器
-if not os.listdir(orign_path):
-    ct = 0
-else:
-    ct = int(sorted(os.listdir(orign_path))[-1].split("_")[2])
+# 依序取出圖片中每個像素
+for x in range(w):
+    for y in range(h):
+        if gray[y, x] > 120:
+            img[y, x, 3] = 0
+            # 如果該像素的灰階度大於 200，調整該像素的透明度
+            # 使用 255 - gray[y, x] 可以將一些邊緣的像素變成半透明，避免太過鋸齒的邊緣
 
-foo = 5
-while foo:
-    print(f"倒數 {foo}...")
-    time.sleep(1)
-    foo -= 1
-
-while True:
-    # 確認目前正在進行答題
-    # 擷取畫面
-    im_q = pyautogui.screenshot(region=(290, 173, 716, 158))  # 只有題目
-    im_qa = pyautogui.screenshot(region=(290, 145, 716, 560))  # 題目和選項
-
-    # 比對暫存檔
-    # 確認暫存檔存在
-    # 暫存檔與當前截圖相同
-    # 暫存檔與當前截圖不符合
-
-    # 存檔
-    filename_q = f"{title}_{str(ct).zfill(3)}_q.png"  # 檔名
-    im_q.save(os.path.join(orign_path, filename_q))  # 路徑
-    print(f"{filename_q} 儲存完成")  # 打印
-    filename_qa = f"{title}_{str(ct).zfill(3)}_qa.png"  # 檔名
-    im_qa.save(os.path.join(orign_path, filename_qa))  # 路徑
-    print(f"{filename_qa} 儲存完成")  # 打印
-    time.sleep(1)  # 停滯 1 秒
-
-    # 更新
-    ct += 1  # 計數器
-
-    # 下一題
-    pyautogui.moveTo(408, 374)  # 移動滑鼠
-    pyautogui.mouseDown()
-    pyautogui.mouseUp()
-    time.sleep(1)  # 停滯 1 秒
-    pyautogui.moveTo(490, 634)  # 移動滑鼠
-    pyautogui.mouseDown()
-    pyautogui.mouseUp()
-    time.sleep(1)  # 停滯 1 秒
+cv2.imwrite("oxxostudio.png", img)  # 存檔儲存為 png
+cv2.waitKey(0)  # 按下任意鍵停止
+cv2.destroyAllWindows()
 
 
-# pyautogui.displayMousePosition()
+img = Image.open("oxxostudio.png")
 
+# 使用 pytesseract 來辨識文字
+text = pytesseract.image_to_string(
+    img, lang="chi_tra+chi_sim+eng"
+)  # 'chi_sim' 用於簡體中文，'chi_tra' 用於繁體中文
 
-"""QA: 290, 145->1006, 705
-Q: 290, 173->1006, 331
-
-A: 408, 374
-B: 408, 420
-C: 408, 468
-D: 408, 528
-
-Y: 490, 634
-N: 766, 634"""
+# 打印識別的文字
+print(text)  # 打開圖片
