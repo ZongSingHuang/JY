@@ -3,6 +3,7 @@ import time
 
 import keyboard
 import pyautogui
+from skimage.metrics import structural_similarity as ssim
 
 
 def check_esc():
@@ -36,7 +37,7 @@ def run():
         },
         "region": {
             "answer_area": (436, 604, 399, 68),
-            "q": (290, 180, 716, 158),
+            "q": (290, 180, 720, 158),
             "qa": (290, 145, 716, 560),
         },
         "pixel": ["2560x1600"],
