@@ -3,7 +3,6 @@ import time
 
 import keyboard
 import pyautogui
-from skimage.metrics import structural_similarity as ssim
 
 
 def check_esc():
@@ -100,51 +99,33 @@ def run():
                     pyautogui.locateOnScreen(file_path, region=config["region"]["q"])
                 except pyautogui.ImageNotFoundException:
                     new_q = True
+                    print("題目還沒刷新!")
 
             # 目前顯示的是新題目
             if new_q:
-                # 是否曾見過這題
-                had_seem = False
-                for filename in os.listdir(config["dir_path"]):
-                    if filename.startswith("iqtest_q_"):
-                        try:
-                            file_path = os.path.join(config["dir_path"], filename)
-                            pyautogui.locateOnScreen(
-                                file_path, region=config["region"]["q"]
-                            )
-                            had_seem = True
-                            break
-                        except pyautogui.ImageNotFoundException:
-                            had_seem = False
+                # 截圖(僅題目)
+                filename = f"iqtest_q_{str(ct).zfill(3)}_{pixel}.png"  # 檔名
+                im = pyautogui.screenshot(region=config["region"]["q"])  # 只有題目
+                im.save(os.path.join(config["dir_path"], filename))  # 路徑
+                print(f"取得新題目 {filename}...")
+                filename = f"iqtest_tmp_{pixel}.png"  # 檔名
+                im.save(os.path.join(config["dir_path"], filename))  # 路徑
 
-                if not had_seem:
-                    # 截圖(僅題目)
-                    filename = f"iqtest_q_{str(ct).zfill(3)}_{pixel}.png"  # 檔名
-                    im = pyautogui.screenshot(region=config["region"]["q"])  # 只有題目
-                    im.save(os.path.join(config["dir_path"], filename))  # 路徑
-                    print(f"取得新題目 {filename}...")
-                    filename = f"iqtest_tmp_{pixel}.png"  # 檔名
-                    im.save(os.path.join(config["dir_path"], filename))  # 路徑
+                # 截圖(題目+選項)
+                filename = f"iqtest_qa_{str(ct).zfill(3)}_{pixel}.png"  # 檔名
+                im = pyautogui.screenshot(region=config["region"]["qa"])  # 題目和選項
+                im.save(os.path.join(config["dir_path"], filename))  # 路徑
 
-                    # 截圖(題目+選項)
-                    filename = f"iqtest_qa_{str(ct).zfill(3)}_{pixel}.png"  # 檔名
-                    im = pyautogui.screenshot(
-                        region=config["region"]["qa"]
-                    )  # 題目和選項
-                    im.save(os.path.join(config["dir_path"], filename))  # 路徑
+                # 點擊 [V]
+                pyautogui.moveTo(config["mouse"]["V"]["x"], config["mouse"]["V"]["y"])
+                pyautogui.mouseDown()
+                pyautogui.mouseUp()
+                time.sleep(1)
 
-                    # 點擊 [V]
-                    pyautogui.moveTo(
-                        config["mouse"]["V"]["x"], config["mouse"]["V"]["y"]
-                    )
-                    pyautogui.mouseDown()
-                    pyautogui.mouseUp()
-                    time.sleep(1)
-
-                    # 更新
-                    ct += 1
+                # 更新
+                ct += 1
         except pyautogui.ImageNotFoundException:
-            111
+            print("沒看到題目!")
 
 
 if __name__ == "__main__":
