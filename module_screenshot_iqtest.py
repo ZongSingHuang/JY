@@ -1,8 +1,14 @@
+import json
 import os
 import time
 
+import cv2
 import keyboard
+import numpy as np
+import pandas as pd
 import pyautogui
+import pytesseract
+from addict import Dict
 
 
 def check_esc():
@@ -25,7 +31,7 @@ def run():
     # 初始化
     config = {
         "dir_path": os.path.join(os.getcwd(), "iqtest"),
-        "filenames": ["answer_area.png"],
+        "filenames": ["answer_area.png", "end.png"],
         "mouse": {
             "A": {"x": 408, "y": 374},
             "B": {"x": 408, "y": 420},
@@ -38,14 +44,16 @@ def run():
             "answer_area": (436, 604, 399, 68),
             "q": (290, 180, 720, 158),
             "qa": (290, 145, 716, 560),
+            "response": (297, 144, 132, 35),
         },
-        "pixel": ["2560x1600"],
+        "pixel": ["2560x1600", "1920x1080"],
     }
 
     # 根據當前螢幕解析度，選擇對應的資料夾
     screen_width, screen_height = pyautogui.size()
     pixel = f"{screen_width}x{screen_height}"
     if pixel not in config["pixel"]:
+        print(f"當前解析度為 {pixel}，僅允許 {config['pixel']}!")
         return None
     else:
         for idx, filename in enumerate(config["filenames"]):
@@ -78,12 +86,17 @@ def run():
     ct += 1
 
     # 讀檔
-    # 暫時不需要
+    file_path = os.path.join(config["dir_path"], "sample.json")
+    if not os.path.exists(file_path):
+        table = Dict()
+    else:
+        table = pd.read_json(file_path)
+        table = Dict(table.to_dict())
 
     # 截圖
     while True:
         try:
-            # 確認目前頁面包含作答區
+            # 目前頁面: 作答階段
             file_path = os.path.join(config["dir_path"], f"answer_area_{pixel}.png")
             pyautogui.locateOnScreen(file_path, region=config["region"]["answer_area"])
 
@@ -103,27 +116,110 @@ def run():
 
             # 目前顯示的是新題目
             if new_q:
-                # 截圖(僅題目)
-                filename = f"iqtest_q_{str(ct).zfill(3)}_{pixel}.png"  # 檔名
-                im = pyautogui.screenshot(region=config["region"]["q"])  # 只有題目
-                im.save(os.path.join(config["dir_path"], filename))  # 路徑
-                print(f"取得新題目 {filename}...")
-                filename = f"iqtest_tmp_{pixel}.png"  # 檔名
-                im.save(os.path.join(config["dir_path"], filename))  # 路徑
+                # 目前頁面: 結束階段
+                try:
+                    file_path = os.path.join(config["dir_path"], f"end_{pixel}.png")
+                    pyautogui.locateOnScreen(file_path, region=config["region"]["q"])
+                    print("活動結束...")
 
-                # 截圖(題目+選項)
-                filename = f"iqtest_qa_{str(ct).zfill(3)}_{pixel}.png"  # 檔名
-                im = pyautogui.screenshot(region=config["region"]["qa"])  # 題目和選項
-                im.save(os.path.join(config["dir_path"], filename))  # 路徑
+                    file_path = os.path.join(config["dir_path"], "sample.json")
+                    with open(file_path, "w", encoding="utf-8") as fp:
+                        json.dump(table, fp, ensure_ascii=False, indent=4)
+                    return None
+                except pyautogui.ImageNotFoundException:
+                    # 截圖(題目+選項)
+                    filename = f"iqtest_qa_{str(ct).zfill(4)}_{pixel}.png"  # 檔名
+                    img = pyautogui.screenshot(
+                        region=config["region"]["qa"]
+                    )  # 題目和選項
+                    img.save(os.path.join(config["dir_path"], filename))  # 路徑
 
-                # 點擊 [V]
-                pyautogui.moveTo(config["mouse"]["V"]["x"], config["mouse"]["V"]["y"])
-                pyautogui.mouseDown()
-                pyautogui.mouseUp()
-                time.sleep(1)
+                    # 截圖(僅題目)
+                    filename = f"iqtest_q_{str(ct).zfill(4)}_{pixel}.png"  # 檔名
+                    img = pyautogui.screenshot(region=config["region"]["q"])  # 只有題目
+                    img.save(os.path.join(config["dir_path"], filename))  # 路徑
+                    print(f"取得題目 {filename}...")
+                    filename = f"iqtest_tmp_{pixel}.png"  # 檔名
+                    img.save(os.path.join(config["dir_path"], filename))  # 路徑
 
-                # 更新
-                ct += 1
+                    # 將與目標顏色不同的像素設為白色
+                    file_path = os.path.join(config["dir_path"], filename)
+                    img = cv2.imread(file_path)
+                    target_color = [120] * 3
+                    mask = np.any(img >= target_color, axis=-1)
+                    img[mask] = [255, 255, 255]
+
+                    # 使用 pytesseract 來辨識文字
+                    question = pytesseract.image_to_string(
+                        img, lang="chi_tra+chi_sim+eng"
+                    )
+                    question = question.replace(" ", "").replace("\n", "")
+
+                    if not table[question]:
+                        table[question] = {"A": "?", "B": "?", "C": "?", "D": "?"}
+
+                    not_sure = ""
+                    is_correct = ""
+                    for k, v in table[question].items():
+                        if v == "V":
+                            is_correct = k
+                        elif v == "?":
+                            not_sure = k
+
+                    if is_correct:
+                        pyautogui.moveTo(
+                            config["mouse"][is_correct]["x"],
+                            config["mouse"][is_correct]["y"],
+                        )
+                    elif not_sure:
+                        pyautogui.moveTo(
+                            config["mouse"][not_sure]["x"],
+                            config["mouse"][not_sure]["y"],
+                        )
+                    pyautogui.mouseDown()
+                    time.sleep(0.25)
+
+                    # 點擊 [V]
+                    pyautogui.moveTo(
+                        config["mouse"]["V"]["x"], config["mouse"]["V"]["y"]
+                    )
+                    pyautogui.mouseDown()
+                    time.sleep(1.5)
+
+                    if not is_correct:
+                        # 截圖(回饋)
+                        filename = "response.png"  # 檔名
+                        img = pyautogui.screenshot(region=config["region"]["response"])
+                        img.save(os.path.join(config["dir_path"], filename))  # 路徑
+                        img.save(
+                            os.path.join(
+                                config["dir_path"],
+                                f"iqtest_response_{str(ct).zfill(4)}_{pixel}.png",
+                            )
+                        )  # 路徑
+
+                        # 將與目標顏色不同的像素設為白色
+                        file_path = os.path.join(config["dir_path"], filename)
+                        img = cv2.imread(file_path)
+                        target_color = [190] * 3
+                        mask = np.any(img <= target_color, axis=-1)
+                        img[mask] = [0, 0, 0]
+
+                        # 使用 pytesseract 來辨識文字
+                        response = pytesseract.image_to_string(
+                            img, lang="chi_tra+chi_sim+eng"
+                        )
+                        response = response.replace(" ", "").replace("\n", "")
+
+                        if response == "答對了":
+                            table[question][not_sure] = "V"
+                        elif response in ["答錯了", "化妳"]:
+                            table[question][not_sure] = "X"
+                        else:
+                            print("無法辨識回饋!")
+
+                    # 更新
+                    ct += 1
         except pyautogui.ImageNotFoundException:
             print("沒看到題目!")
 
